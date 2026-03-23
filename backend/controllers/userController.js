@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 
 // 1. REGISTER
 const registerUser = async (req, res) => {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, phone } = req.body;
     try {
         const userExists = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
         if (userExists.rows.length > 0) {
@@ -15,8 +15,8 @@ const registerUser = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, salt);
 
         const newUser = await pool.query(
-            'INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4) RETURNING id, name, email, role',
-            [name, email, hashedPassword, role || 'citizen']
+            'INSERT INTO users (name, email, password, role, phone) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, email, role, phone',
+            [name, email, hashedPassword, role || 'citizen', phone || null]
         );
 
         res.status(201).json({
@@ -29,12 +29,11 @@ const registerUser = async (req, res) => {
     }
 };
 
-// 2. LOGIN (NEW)
+// 2. LOGIN
 const loginUser = async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        // A. Find user by email
         const userResult = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
         
         if (userResult.rows.length === 0) {
@@ -43,20 +42,19 @@ const loginUser = async (req, res) => {
 
         const user = userResult.rows[0];
 
-        // B. Check Password
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(400).json({ message: 'Invalid Password' });
         }
 
-        // C. Success! Send back user info (In a real app, we would send a Token here)
         res.json({
             message: 'Login Successful',
             user: {
                 id: user.id,
                 name: user.name,
                 email: user.email,
-                role: user.role
+                role: user.role,
+                phone: user.phone
             }
         });
 

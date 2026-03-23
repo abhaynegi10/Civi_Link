@@ -5,14 +5,24 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '@/components/theme-provider';
 import Link from 'next/link';
+import { Sun, Moon, AlertCircle } from 'lucide-react';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
+import Card from '@/components/ui/Card';
 
 export default function RegisterPage() {
   const { darkMode, toggleTheme } = useTheme();
   const router = useRouter();
-  
-  // We need Name, Email, Password
-  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    role: 'citizen',
+    phone: '',
+  });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -21,6 +31,7 @@ export default function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
     try {
       const res = await fetch('http://localhost:5000/api/users/register', {
@@ -32,90 +43,132 @@ export default function RegisterPage() {
       const data = await res.json();
 
       if (res.ok) {
-        alert("Registration Successful! Please Login.");
-        router.push('/login'); // Send them to login page
+        alert('Registration Successful! Please Login.');
+        router.push('/login');
       } else {
         setError(data.message);
       }
     } catch (err) {
       setError('Server error. Is backend running?');
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Theme Styles (Same as Login)
-  const theme = {
-    bg: darkMode ? 'bg-slate-950' : 'bg-gray-100',
-    card: darkMode ? 'bg-slate-900/50 border-slate-700' : 'bg-white/80 border-gray-200',
-    input: darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-gray-300 text-gray-900',
-    label: darkMode ? 'text-gray-300' : 'text-gray-700',
-  };
-
   return (
-    <div className={`min-h-screen flex items-center justify-center p-4 transition-colors duration-300 ${theme.bg}`}>
-      
-      {/* Background blobs */}
-      <div className={`absolute inset-0 overflow-hidden pointer-events-none`}>
-          <div className={`absolute top-0 right-1/4 w-96 h-96 bg-green-500/20 rounded-full blur-3xl mix-blend-multiply ${darkMode ? 'opacity-20' : 'opacity-70'}`}></div>
-          <div className={`absolute bottom-0 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl mix-blend-multiply ${darkMode ? 'opacity-20' : 'opacity-70'}`}></div>
-      </div>
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gray-50 dark:bg-slate-950 transition-colors duration-200">
+      {/* Theme toggle */}
+      <button
+        onClick={toggleTheme}
+        className="fixed top-4 right-4 p-2 rounded-lg text-gray-500 dark:text-slate-400 hover:bg-gray-200 dark:hover:bg-slate-800 transition-colors"
+        aria-label="Toggle theme"
+      >
+        {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+      </button>
 
-      <div className={`relative w-full max-w-md p-8 rounded-3xl shadow-2xl border backdrop-blur-xl ${theme.card}`}>
-        
+      <div className="w-full max-w-md">
+        {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-green-500 to-blue-600 mb-2">
-            Join CivicConnect
-          </h1>
-          <p className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            Create an account to start reporting
+          <Link href="/" className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
+            CivicConnect
+          </Link>
+          <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
+            Create an account to get started
           </p>
         </div>
 
-        <button onClick={toggleTheme} className="absolute top-6 right-6 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-slate-700 transition">
-           {darkMode ? '☀️' : '🌙'}
-        </button>
+        <Card className="p-8">
+          {/* Error */}
+          {error && (
+            <div className="flex items-center gap-2 p-3 mb-6 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-sm">
+              <AlertCircle size={16} className="shrink-0" />
+              {error}
+            </div>
+          )}
 
-        {error && (
-          <div className="bg-red-500/10 border border-red-500/20 text-red-600 p-3 rounded-xl mb-6 text-sm text-center font-bold">
-            ⚠️ {error}
-          </div>
-        )}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Role Selector */}
+            <div className="space-y-1.5">
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300">I am a</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, role: 'citizen' })}
+                  className={`px-4 py-2.5 rounded-lg text-sm font-semibold border transition-all ${
+                    formData.role === 'citizen'
+                      ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 ring-2 ring-blue-500/20'
+                      : 'bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-600 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  🏙️ Citizen
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, role: 'worker' })}
+                  className={`px-4 py-2.5 rounded-lg text-sm font-semibold border transition-all ${
+                    formData.role === 'worker'
+                      ? 'bg-emerald-50 dark:bg-emerald-900/30 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 ring-2 ring-emerald-500/20'
+                      : 'bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-600 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  🛠️ Worker
+                </button>
+              </div>
+              <p className="text-xs text-gray-400 dark:text-slate-500">
+                {formData.role === 'citizen'
+                  ? 'Report community issues and track their resolution'
+                  : 'Browse and apply for local service jobs'}
+              </p>
+            </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className={`block text-sm font-bold mb-2 ${theme.label}`}>Full Name</label>
-            <input 
-              name="name" type="text" required placeholder="John Doe"
-              className={`w-full p-3 rounded-xl border outline-none focus:ring-2 focus:ring-blue-500 transition shadow-sm font-medium ${theme.input}`}
+            <Input
+              label="Full Name"
+              name="name"
+              type="text"
+              required
+              placeholder="John Doe"
               onChange={handleChange}
             />
-          </div>
 
-          <div>
-            <label className={`block text-sm font-bold mb-2 ${theme.label}`}>Email Address</label>
-            <input 
-              name="email" type="email" required placeholder="user@example.com"
-              className={`w-full p-3 rounded-xl border outline-none focus:ring-2 focus:ring-blue-500 transition shadow-sm font-medium ${theme.input}`}
+            <Input
+              label="Email Address"
+              name="email"
+              type="email"
+              required
+              placeholder="you@example.com"
               onChange={handleChange}
             />
-          </div>
 
-          <div>
-            <label className={`block text-sm font-bold mb-2 ${theme.label}`}>Password</label>
-            <input 
-              name="password" type="password" required placeholder="Create a password"
-              className={`w-full p-3 rounded-xl border outline-none focus:ring-2 focus:ring-blue-500 transition shadow-sm font-medium ${theme.input}`}
+            <Input
+              label="Password"
+              name="password"
+              type="password"
+              required
+              placeholder="Create a password"
               onChange={handleChange}
             />
-          </div>
 
-          <button className="w-full bg-gradient-to-r from-green-500 to-blue-600 text-white py-3.5 rounded-xl font-bold text-lg hover:shadow-lg hover:shadow-green-500/25 transition transform hover:-translate-y-0.5">
-            Create Account
-          </button>
-        </form>
+            {/* Phone — for contact between creators and workers */}
+            <Input
+              label="Phone Number"
+              name="phone"
+              type="tel"
+              placeholder="+91 9876543210"
+              onChange={handleChange}
+            />
 
-        <p className={`mt-8 text-center text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-          Already have an account? <Link href="/login" className="text-blue-600 hover:text-blue-700 font-bold hover:underline">Login Here</Link>
-        </p>
+            <Button type="submit" className="w-full" size="lg" disabled={loading}>
+              {loading ? 'Creating Account...' : 'Create Account'}
+            </Button>
+          </form>
+
+          <p className="mt-6 text-center text-sm text-gray-500 dark:text-slate-400">
+            Already have an account?{' '}
+            <Link href="/login" className="text-blue-600 dark:text-blue-400 font-medium hover:underline">
+              Login Here
+            </Link>
+          </p>
+        </Card>
       </div>
     </div>
   );

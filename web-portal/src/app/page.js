@@ -1,121 +1,274 @@
 // src/app/page.js
 'use client';
 
-import { useState } from 'react';
+import { useRef } from 'react';
 import Link from 'next/link';
+import { useTheme } from '@/components/theme-provider';
+import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
+import { Sun, Moon, Camera, Cpu, CheckCircle, ArrowRight, Shield, Users, Wrench } from 'lucide-react';
+import Button from '@/components/ui/Button';
+import Card from '@/components/ui/Card';
 
 export default function LandingPage() {
-  const [darkMode, setDarkMode] = useState(false);
+  const { darkMode, toggleTheme } = useTheme();
+  const prefersReducedMotion = useReducedMotion();
 
-  // Toggle Function
-  const toggleTheme = () => {
-    setDarkMode(!darkMode);
-  };
+  // Refs for parallax sections
+  const heroRef = useRef(null);
+  const rolesRef = useRef(null);
+  const howRef = useRef(null);
 
-  // Dynamic Classes based on mode
-  const theme = {
-    bg: darkMode ? 'bg-slate-900' : 'bg-gray-50',
-    text: darkMode ? 'text-gray-100' : 'text-gray-900',
-    cardBg: darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-100',
-    cardText: darkMode ? 'text-gray-300' : 'text-gray-600',
-    heroGradient: darkMode ? 'from-blue-900 to-slate-900' : 'from-blue-600 to-indigo-700',
-    navBg: darkMode ? 'bg-slate-900/90' : 'bg-white/90',
-  };
+  // Hero parallax — text rises slower than scroll
+  const { scrollYProgress: heroScroll } = useScroll({
+    target: heroRef,
+    offset: ['start start', 'end start'],
+  });
+  const heroTextY = useTransform(heroScroll, [0, 1], prefersReducedMotion ? [0, 0] : [0, 80]);
+  const heroBlobY = useTransform(heroScroll, [0, 1], prefersReducedMotion ? [0, 0] : [0, 140]);
+  const heroOpacity = useTransform(heroScroll, [0, 0.6], [1, 0]);
+
+  // Roles section — cards float up
+  const { scrollYProgress: rolesScroll } = useScroll({
+    target: rolesRef,
+    offset: ['start end', 'end start'],
+  });
+  const rolesY = useTransform(rolesScroll, [0, 0.5], prefersReducedMotion ? [0, 0] : [60, 0]);
+  const rolesOpacity = useTransform(rolesScroll, [0, 0.3], [0, 1]);
+
+  // How it works
+  const { scrollYProgress: howScroll } = useScroll({
+    target: howRef,
+    offset: ['start end', 'end start'],
+  });
+  const howY = useTransform(howScroll, [0, 0.5], prefersReducedMotion ? [0, 0] : [40, 0]);
+  const howOpacity = useTransform(howScroll, [0, 0.3], [0, 1]);
+
+  const roleCards = [
+    {
+      title: 'Citizen',
+      desc: 'Report broken streetlights, potholes, garbage, or any community issue that needs attention.',
+      icon: Users,
+      iconBg: 'bg-blue-50 dark:bg-blue-900/30',
+      iconColor: 'text-blue-600 dark:text-blue-400',
+      link: '/dashboard',
+      buttonVariant: 'primary',
+      buttonText: 'Report Issues',
+    },
+    {
+      title: 'Worker',
+      desc: 'Plumber, electrician, mechanic? Browse open service jobs and apply to help your community.',
+      icon: Wrench,
+      iconBg: 'bg-emerald-50 dark:bg-emerald-900/30',
+      iconColor: 'text-emerald-600 dark:text-emerald-400',
+      link: '/worker',
+      buttonVariant: 'secondary',
+      buttonText: 'Find Jobs',
+    },
+    {
+      title: 'Administration',
+      desc: 'Monitor city issues, oversee AI classifications, manage users, and analyze community data.',
+      icon: Shield,
+      iconBg: 'bg-red-50 dark:bg-red-900/30',
+      iconColor: 'text-red-600 dark:text-red-400',
+      link: '/admin',
+      buttonVariant: 'secondary',
+      buttonText: 'Admin Login',
+    },
+  ];
+
+  const howSteps = [
+    {
+      title: '1. Report',
+      icon: Camera,
+      desc: 'Snap a photo of the problem and describe the issue with location details.',
+    },
+    {
+      title: '2. AI Sorts',
+      icon: Cpu,
+      desc: 'Our AI engine automatically categorizes: Government issue or Private service need.',
+    },
+    {
+      title: '3. Resolved',
+      icon: CheckCircle,
+      desc: 'Officials address civic issues, or local skilled workers get matched to service jobs.',
+    },
+  ];
 
   return (
-    <main className={`min-h-screen transition-colors duration-300 ${theme.bg} ${theme.text}`}>
-      
-      {/* --- NAVBAR --- */}
-      <nav className={`fixed top-0 w-full z-50 backdrop-blur-md border-b ${darkMode ? 'border-slate-800' : 'border-gray-200'} ${theme.navBg}`}>
-        <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
+    <main className="min-h-screen bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100 overflow-hidden">
+
+      {/* ── NAVBAR ── */}
+      <nav className="sticky top-0 z-50 border-b bg-white/95 dark:bg-slate-950/95 border-gray-200 dark:border-slate-800 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-6 py-3.5 flex justify-between items-center">
+          <span className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
             CivicConnect
+          </span>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-700 dark:hover:text-slate-200 transition-colors"
+              aria-label="Toggle theme"
+            >
+              {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+            <Link href="/login">
+              <Button variant="secondary" size="sm">Sign In</Button>
+            </Link>
+            <Link href="/register">
+              <Button variant="primary" size="sm">Get Started</Button>
+            </Link>
           </div>
-          
-          {/* Dark Mode Switch */}
-          <button 
-            onClick={toggleTheme}
-            className={`p-2 rounded-full transition-all ${darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-gray-200 hover:bg-gray-300'}`}
-          >
-            {darkMode ? (
-              // Sun Icon
-              <svg className="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-            ) : (
-              // Moon Icon
-              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
-            )}
-          </button>
         </div>
       </nav>
 
-      {/* --- HERO SECTION --- */}
-      <header className={`pt-32 pb-20 px-6 text-center bg-gradient-to-br ${theme.heroGradient} text-white`}>
-        <div className="max-w-4xl mx-auto">
-          <span className="inline-block py-1 px-3 rounded-full bg-white/20 text-sm font-semibold mb-6 backdrop-blur-sm">
+      {/* ── HERO (with parallax) ── */}
+      <header ref={heroRef} className="relative overflow-hidden">
+        {/* Background gradient — moves slower (depth effect) */}
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-50 to-white dark:from-slate-900 dark:to-slate-950" />
+
+        {/* Decorative blobs — parallax background layer */}
+        <motion.div
+          className="absolute inset-0 pointer-events-none"
+          style={{ y: heroBlobY }}
+        >
+          <div className="absolute top-20 left-1/4 w-72 h-72 bg-blue-200/20 dark:bg-blue-500/5 rounded-full blur-3xl" />
+          <div className="absolute top-32 right-1/4 w-96 h-96 bg-indigo-200/15 dark:bg-indigo-500/5 rounded-full blur-3xl" />
+          <div className="absolute -bottom-20 left-1/2 w-80 h-80 bg-sky-200/20 dark:bg-sky-500/5 rounded-full blur-3xl" />
+        </motion.div>
+
+        {/* Hero content — parallax foreground */}
+        <motion.div
+          className="relative max-w-7xl mx-auto px-6 pt-20 pb-24 text-center"
+          style={{ y: heroTextY, opacity: heroOpacity }}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 text-sm font-medium mb-6"
+          >
+            <Cpu size={14} />
             AI-Powered Community Management
-          </span>
-          <h1 className="text-5xl md:text-6xl font-extrabold mb-6 leading-tight">
-            Fix Your Neighborhood.<br/> Find Local Work.
-          </h1>
-          <p className="text-xl opacity-90 mb-10 max-w-2xl mx-auto font-light">
-            We use AI to route your complaints: Government issues go to the officials, Service needs go to local freelancers.
-          </p>
-        </div>
+          </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-gray-900 dark:text-white mb-6 leading-[1.1]"
+          >
+            Fix Your Neighborhood.
+            <br />
+            <span className="text-blue-600 dark:text-blue-400">Find Local Work.</span>
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.35 }}
+            className="text-lg md:text-xl text-gray-600 dark:text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed"
+          >
+            We use AI to route your complaints: Government issues go to the officials,
+            service needs go to local freelancers.
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-3"
+          >
+            <Link href="/register">
+              <Button size="lg" className="w-full sm:w-auto">
+                Report an Issue
+                <ArrowRight size={16} />
+              </Button>
+            </Link>
+            <Link href="/login">
+              <Button variant="secondary" size="lg" className="w-full sm:w-auto">
+                Sign In to Dashboard
+              </Button>
+            </Link>
+          </motion.div>
+        </motion.div>
       </header>
 
-      {/* --- ROLE SELECTION CARDS --- */}
-      <section className="px-6 -mt-16 pb-20">
-        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8">
-          
-          {/* Card 1: Citizen / Job Seeker */}
-          <div className={`p-8 rounded-2xl shadow-xl border-t-4 border-blue-500 transform hover:-translate-y-2 transition-all duration-300 ${theme.cardBg}`}>
-            <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mb-6">
-              <span className="text-3xl">🏙️</span>
-            </div>
-            <h2 className={`text-2xl font-bold mb-3 ${theme.text}`}>Citizen & Job Seeker</h2>
-            <p className={`mb-8 leading-relaxed ${theme.cardText}`}>
-              Report broken streetlights, potholes, or garbage. Or, if you are a skilled worker (plumber, mechanic), find local jobs instantly.
-            </p>
-            <Link href="/dashboard" className="block w-full text-center py-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg hover:shadow-blue-500/50 transition">
-              Enter Portal &rarr;
-            </Link>
-          </div>
-
-          {/* Card 2: Admin */}
-          <div className={`p-8 rounded-2xl shadow-xl border-t-4 border-purple-500 transform hover:-translate-y-2 transition-all duration-300 ${theme.cardBg}`}>
-            <div className="w-14 h-14 bg-purple-100 rounded-full flex items-center justify-center mb-6">
-              <span className="text-3xl">🛡️</span>
-            </div>
-            <h2 className={`text-2xl font-bold mb-3 ${theme.text}`}>Administration</h2>
-            <p className={`mb-8 leading-relaxed ${theme.cardText}`}>
-              Monitor city issues, oversee AI classifications, manage users, and analyze community data.
-            </p>
-            <Link href="/admin" className={`block w-full text-center py-4 rounded-xl font-bold border-2 transition ${darkMode ? 'border-gray-600 text-white hover:bg-gray-800' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}>
-              Admin Login
-            </Link>
-          </div>
-
-        </div>
-      </section>
-
-      {/* --- FEATURES GRID --- */}
-      <section className="max-w-6xl mx-auto px-6 pb-20">
-        <h3 className={`text-center text-2xl font-bold mb-12 ${theme.text}`}>How It Works</h3>
-        <div className="grid md:grid-cols-3 gap-8 text-center">
-          {[
-            { title: "1. Report", icon: "📸", desc: "Snap a photo of the problem." },
-            { title: "2. AI Sorts", icon: "🤖", desc: "Our AI decides: Govt or Private?" },
-            { title: "3. Solved", icon: "✅", desc: "Officials fix it, or Locals are hired." }
-          ].map((item, idx) => (
-            <div key={idx} className={`p-6 rounded-xl ${darkMode ? 'bg-slate-800' : 'bg-white'} shadow-md`}>
-              <div className="text-4xl mb-4">{item.icon}</div>
-              <h4 className={`text-xl font-bold mb-2 ${theme.text}`}>{item.title}</h4>
-              <p className={theme.cardText}>{item.desc}</p>
-            </div>
+      {/* ── ROLE SELECTION (with scroll reveal + parallax) ── */}
+      <section ref={rolesRef} className="max-w-7xl mx-auto px-6 py-20">
+        <motion.div
+          className="grid md:grid-cols-3 gap-6"
+          style={{ y: rolesY, opacity: rolesOpacity }}
+        >
+          {roleCards.map((role, idx) => (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.5, delay: idx * 0.1 }}
+            >
+              <Card hoverable className="p-8 card-hover">
+                <div className={`w-12 h-12 rounded-lg ${role.iconBg} flex items-center justify-center mb-5`}>
+                  <role.icon size={22} className={role.iconColor} />
+                </div>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{role.title}</h2>
+                <p className="text-gray-600 dark:text-slate-400 mb-6 leading-relaxed">{role.desc}</p>
+                <Link href={role.link}>
+                  <Button variant={role.buttonVariant} className="w-full">
+                    {role.buttonText}
+                    <ArrowRight size={16} />
+                  </Button>
+                </Link>
+              </Card>
+            </motion.div>
           ))}
+        </motion.div>
+      </section>
+
+      {/* ── HOW IT WORKS (with scroll reveal + parallax) ── */}
+      <section ref={howRef} className="border-t border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900/50">
+        <div className="max-w-7xl mx-auto px-6 py-20">
+          <motion.h3
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="text-center text-2xl font-bold text-gray-900 dark:text-white mb-12"
+          >
+            How It Works
+          </motion.h3>
+
+          <motion.div
+            className="grid md:grid-cols-3 gap-8"
+            style={{ y: howY, opacity: howOpacity }}
+          >
+            {howSteps.map((item, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.3 }}
+                transition={{ duration: 0.5, delay: idx * 0.15 }}
+              >
+                <Card className="p-6 text-center card-hover">
+                  <div className="w-12 h-12 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center mx-auto mb-4">
+                    <item.icon size={22} className="text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{item.title}</h4>
+                  <p className="text-gray-600 dark:text-slate-400 text-sm leading-relaxed">{item.desc}</p>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
       </section>
 
+      {/* ── FOOTER ── */}
+      <footer className="border-t border-gray-200 dark:border-slate-800">
+        <div className="max-w-7xl mx-auto px-6 py-8 text-center text-sm text-gray-500 dark:text-slate-500">
+          © {new Date().getFullYear()} CivicConnect. Built for better communities.
+        </div>
+      </footer>
     </main>
   );
 }

@@ -5,13 +5,18 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '@/components/theme-provider';
 import Link from 'next/link';
+import { Sun, Moon, AlertCircle } from 'lucide-react';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
+import Card from '@/components/ui/Card';
 
 export default function LoginPage() {
   const { darkMode, toggleTheme } = useTheme();
   const router = useRouter();
-  
+
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -20,9 +25,9 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
     try {
-      // Note: Assuming backend runs on 5000
       const res = await fetch('http://localhost:5000/api/users/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -33,9 +38,10 @@ export default function LoginPage() {
 
       if (res.ok) {
         localStorage.setItem('user', JSON.stringify(data.user));
-        // Redirect based on role
         if (data.user.role === 'admin') {
           router.push('/admin');
+        } else if (data.user.role === 'worker') {
+          router.push('/worker');
         } else {
           router.push('/dashboard');
         }
@@ -44,77 +50,73 @@ export default function LoginPage() {
       }
     } catch (err) {
       setError('Cannot connect to server. Ensure Backend is running.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Theme Styles
-  const theme = {
-    bg: darkMode ? 'bg-slate-950' : 'bg-gray-100',
-    text: darkMode ? 'text-white' : 'text-gray-900',
-    card: darkMode ? 'bg-slate-900/50 border-slate-700' : 'bg-white/80 border-gray-200',
-    input: darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-gray-300 text-gray-900',
-    label: darkMode ? 'text-gray-300' : 'text-gray-700',
-  };
-
   return (
-    <div className={`min-h-screen flex items-center justify-center p-4 transition-colors duration-300 ${theme.bg}`}>
-      
-      {/* Background decoration (Optional) */}
-      <div className={`absolute inset-0 overflow-hidden pointer-events-none`}>
-          <div className={`absolute top-0 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl mix-blend-multiply ${darkMode ? 'opacity-20' : 'opacity-70'}`}></div>
-          <div className={`absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl mix-blend-multiply ${darkMode ? 'opacity-20' : 'opacity-70'}`}></div>
-      </div>
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gray-50 dark:bg-slate-950 transition-colors duration-200">
+      {/* Theme toggle */}
+      <button
+        onClick={toggleTheme}
+        className="fixed top-4 right-4 p-2 rounded-lg text-gray-500 dark:text-slate-400 hover:bg-gray-200 dark:hover:bg-slate-800 transition-colors"
+        aria-label="Toggle theme"
+      >
+        {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+      </button>
 
-      <div className={`relative w-full max-w-md p-8 rounded-3xl shadow-2xl border backdrop-blur-xl ${theme.card}`}>
-        
+      <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 mb-2">
+          <Link href="/" className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
             CivicConnect
-          </h1>
-          <p className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+          </Link>
+          <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
             Sign in to manage your community
           </p>
         </div>
 
-        {/* Theme Toggle (Small, in corner) */}
-        <button onClick={toggleTheme} className="absolute top-6 right-6 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-slate-700 transition">
-           {darkMode ? '☀️' : '🌙'}
-        </button>
+        <Card className="p-8">
+          {/* Error */}
+          {error && (
+            <div className="flex items-center gap-2 p-3 mb-6 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-sm">
+              <AlertCircle size={16} className="shrink-0" />
+              {error}
+            </div>
+          )}
 
-        {error && (
-          <div className="bg-red-500/10 border border-red-500/20 text-red-600 p-3 rounded-xl mb-6 text-sm text-center font-bold">
-            ⚠️ {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className={`block text-sm font-bold mb-2 ${theme.label}`}>Email Address</label>
-            <input 
-              name="email" type="email" required placeholder="user@example.com"
-              className={`w-full p-3 rounded-xl border outline-none focus:ring-2 focus:ring-blue-500 transition shadow-sm font-medium ${theme.input}`}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <Input
+              label="Email Address"
+              name="email"
+              type="email"
+              required
+              placeholder="you@example.com"
               onChange={handleChange}
             />
-          </div>
 
-          <div>
-            <label className={`block text-sm font-bold mb-2 ${theme.label}`}>Password</label>
-            <input 
-              name="password" type="password" required placeholder="••••••••"
-              className={`w-full p-3 rounded-xl border outline-none focus:ring-2 focus:ring-blue-500 transition shadow-sm font-medium ${theme.input}`}
+            <Input
+              label="Password"
+              name="password"
+              type="password"
+              required
+              placeholder="••••••••"
               onChange={handleChange}
             />
-          </div>
 
-          <button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3.5 rounded-xl font-bold text-lg hover:shadow-lg hover:shadow-blue-500/25 transition transform hover:-translate-y-0.5">
-            Sign In
-          </button>
-        </form>
+            <Button type="submit" className="w-full" size="lg" disabled={loading}>
+              {loading ? 'Signing in...' : 'Sign In'}
+            </Button>
+          </form>
 
-        <p className={`mt-8 text-center text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-          Don't have an account? <Link href="/register" className="text-blue-600 hover:text-blue-700 font-bold hover:underline">Register Now</Link>
-        </p>
+          <p className="mt-6 text-center text-sm text-gray-500 dark:text-slate-400">
+            Don&apos;t have an account?{' '}
+            <Link href="/register" className="text-blue-600 dark:text-blue-400 font-medium hover:underline">
+              Register Now
+            </Link>
+          </p>
+        </Card>
       </div>
     </div>
   );

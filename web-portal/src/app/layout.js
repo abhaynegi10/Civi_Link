@@ -1,21 +1,22 @@
 // src/app/layout.js
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider"; // Import it
+import { ThemeProvider } from "@/components/theme-provider";
+import CustomCursor from "@/components/ui/CustomCursor";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Community Service Platform",
-  description: "Connecting Citizens and Government",
+  title: "CivicConnect — Community Issue Reporting",
+  description: "AI-powered civic issue reporting and local service platform. Report issues, connect with local workers, and improve your community.",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        {/* Wrap the entire app here */}
         <ThemeProvider>
+          <CustomCursor />
           {children}
         </ThemeProvider>
       </body>
