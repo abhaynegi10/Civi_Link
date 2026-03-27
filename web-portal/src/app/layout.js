@@ -7,7 +7,7 @@ import CustomCursor from "@/components/ui/CustomCursor";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "CivicConnect — Community Issue Reporting",
+  title: "Civi-Link — Community Issue Reporting",
   description: "AI-powered civic issue reporting and local service platform. Report issues, connect with local workers, and improve your community.",
 };
 

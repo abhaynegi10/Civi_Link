@@ -14,7 +14,10 @@ require('./config/db');
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || '*',
+  credentials: true,
+}));
 app.use(express.json());
 
 // Serve static files (uploaded images)

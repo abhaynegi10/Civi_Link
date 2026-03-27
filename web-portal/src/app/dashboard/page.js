@@ -43,7 +43,7 @@ export default function UserDashboard() {
 
   const fetchReports = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/reports');
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reports`);
       const data = await res.json();
       setReports(data);
     } catch (err) {
@@ -53,7 +53,7 @@ export default function UserDashboard() {
 
   const fetchApplications = async (reportId) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/applications/report/${reportId}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/applications/report/${reportId}`);
       const data = await res.json();
       setApplications((prev) => ({ ...prev, [reportId]: data }));
     } catch (err) {
@@ -74,7 +74,7 @@ export default function UserDashboard() {
 
   const handleApplicationAction = async (appId, status, reportId) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/applications/${appId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/applications/${appId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),
@@ -92,7 +92,7 @@ export default function UserDashboard() {
   const handleDelete = async (reportId) => {
     if (!confirm('Are you sure you want to delete this report?')) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/reports/${reportId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reports/${reportId}`, {
         method: 'DELETE',
       });
       if (res.ok) {
@@ -118,7 +118,7 @@ export default function UserDashboard() {
     }
 
     try {
-      const res = await fetch('http://localhost:5000/api/reports', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reports`, {
         method: 'POST',
         body: formData,
       });
@@ -265,7 +265,7 @@ export default function UserDashboard() {
                 {report.image_url && (
                   <div className="sm:w-48 sm:min-h-[160px] bg-gray-100 dark:bg-slate-800 shrink-0">
                     <img
-                      src={`http://localhost:5000${report.image_url}`}
+                      src={`${process.env.NEXT_PUBLIC_API_URL}${report.image_url}`}
                       alt={report.title}
                       className="w-full h-48 sm:h-full object-cover"
                       onError={(e) => {

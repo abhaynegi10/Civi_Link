@@ -101,7 +101,7 @@ export default function LandingPage() {
       <nav className="sticky top-0 z-50 border-b bg-white/95 dark:bg-slate-950/95 border-gray-200 dark:border-slate-800 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-6 py-3.5 flex justify-between items-center">
           <span className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
-            CivicConnect
+            Civi-Link
           </span>
           <div className="flex items-center gap-3">
             <button
@@ -266,7 +266,7 @@ export default function LandingPage() {
       {/* ── FOOTER ── */}
       <footer className="border-t border-gray-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-6 py-8 text-center text-sm text-gray-500 dark:text-slate-500">
-          © {new Date().getFullYear()} CivicConnect. Built for better communities.
+          © {new Date().getFullYear()} Civi-Link. Built for better communities.
         </div>
       </footer>
     </main>

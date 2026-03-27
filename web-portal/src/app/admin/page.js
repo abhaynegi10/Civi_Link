@@ -36,7 +36,7 @@ export default function AdminDashboard() {
 
   const fetchReports = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/reports');
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reports`);
       const data = await res.json();
       setReports(data);
     } catch (err) {
@@ -48,7 +48,7 @@ export default function AdminDashboard() {
     if (!confirm('Are you sure you want to delete this report? This cannot be undone.')) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/reports/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reports/${id}`, {
         method: 'DELETE',
       });
       if (res.ok) {
@@ -150,7 +150,7 @@ export default function AdminDashboard() {
                     <td className="px-6 py-4">
                       {report.image_url ? (
                         <a
-                          href={`http://localhost:5000${report.image_url}`}
+                          href={`${process.env.NEXT_PUBLIC_API_URL}${report.image_url}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline text-sm"

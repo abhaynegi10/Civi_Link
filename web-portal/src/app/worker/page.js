@@ -41,7 +41,7 @@ export default function WorkerDashboard() {
 
   const fetchJobs = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/reports/service-jobs');
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reports/service-jobs`);
       const data = await res.json();
       setJobs(data);
     } catch (err) {
@@ -51,7 +51,7 @@ export default function WorkerDashboard() {
 
   const fetchApplications = async (workerId) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/applications/worker/${workerId}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/applications/worker/${workerId}`);
       const data = await res.json();
       setApplications(data);
     } catch (err) {
@@ -64,7 +64,7 @@ export default function WorkerDashboard() {
     setSubmitting(true);
 
     try {
-      const res = await fetch('http://localhost:5000/api/applications', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/applications`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -175,7 +175,7 @@ export default function WorkerDashboard() {
                   {job.image_url && (
                     <div className="sm:w-48 sm:min-h-[160px] bg-gray-100 dark:bg-slate-800 shrink-0">
                       <img
-                        src={`http://localhost:5000${job.image_url}`}
+                        src={`${process.env.NEXT_PUBLIC_API_URL}${job.image_url}`}
                         alt={job.title}
                         className="w-full h-48 sm:h-full object-cover"
                         onError={(e) => { e.target.src = 'https://via.placeholder.com/400x300?text=No+Image'; }}

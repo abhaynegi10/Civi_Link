@@ -16,7 +16,7 @@ export default function Navbar({ user, showAdminBadge = false, onLogout }) {
             href="/"
             className="text-xl font-bold text-gray-900 dark:text-white tracking-tight"
           >
-            CivicConnect
+            Civi-Link
           </Link>
 
           {showAdminBadge && (
